@@ -1,19 +1,29 @@
 fun main() {
     fun parse(s: String) = s.split(" ").map { it.toInt() }
 
-    fun List<Int>.isSafe(): Boolean {
-        val pairs = zipWithNext()
-        return pairs.all { (a, b) -> a - b in 1..3 } || pairs.all { (a, b) -> b - a in 1..3 }
+    fun List<Int>.isSafe(range: IntRange, tolerate: Boolean = false): Boolean {
+        var mayIgnore = tolerate
+
+        var prev = first()
+        for ((i, value) in withIndex())
+            when {
+                i == 0 -> {}
+                value - prev in range -> prev = value
+                mayIgnore -> mayIgnore = false
+                else -> return false
+            }
+
+        return true
     }
 
-    fun List<Int>.variationsWithSingleRemoved() =
-        indices.map { i -> withIndex().filter { it.index != i }.map { it.value } }
+    fun List<Int>.isSafe(tolerate: Boolean) =
+        isSafe(1..3, tolerate) || isSafe(-3..-1, tolerate)
 
     fun part1(input: List<String>) =
-        input.map { parse(it) }.count { it.isSafe() }
+        input.count { parse(it).isSafe(tolerate = false) }
 
     fun part2(input: List<String>) =
-        input.map { parse(it) }.count { it.variationsWithSingleRemoved().any { it.isSafe() } }
+        input.count { parse(it).isSafe(tolerate = true) }
 
     val testInput = readInput("Day02_test")
     check(part1(testInput) == 2)
