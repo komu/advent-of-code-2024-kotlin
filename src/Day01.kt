@@ -21,12 +21,12 @@ fun main() {
         return xs.sumOf { x -> x * ys.count { y -> x == y } }
     }
 
-    val testInput = readInput("Day01_test")
+    val testInput = readInputLines("Day01_test")
 
     check(part1(testInput) == 11)
     check(part2(testInput) == 31)
 
-    val input = readInput("Day01")
+    val input = readInputLines("Day01")
     part1(input).println()
     part2(input).println()
 }
