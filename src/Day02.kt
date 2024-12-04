@@ -1,13 +1,12 @@
 fun main() {
     fun parse(s: String) = s.split(" ").map { it.toInt() }
 
-    fun List<Int>.isSafe(range: IntRange, tolerate: Boolean = false): Boolean {
+    fun List<Int>.isSafe(range: IntRange, tolerate: Boolean): Boolean {
         var mayIgnore = tolerate
 
         var prev = first()
-        for ((i, value) in withIndex())
+        for (value in drop(1))
             when {
-                i == 0 -> {}
                 value - prev in range -> prev = value
                 mayIgnore -> mayIgnore = false
                 else -> return false
