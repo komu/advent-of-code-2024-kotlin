@@ -1,11 +1,9 @@
 import Direction.*
 
 private class LetterGrid(val rows: List<String>) {
-    val width = rows.first().length
-    val coordinates = (0..<width).flatMap { x -> rows.indices.map { y -> Point(x, y) } }
+    val coordinates = rows.first().indices.flatMap { x -> rows.indices.map { y -> Point(x, y) } }
 
     operator fun get(p: Point) = rows.getOrNull(p.y)?.getOrNull(p.x) ?: '.'
-    operator fun get(x: Int, y: Int) = rows.getOrNull(y)?.getOrNull(x) ?: '.'
 }
 
 fun main() {
