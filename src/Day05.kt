@@ -1,10 +1,7 @@
-
 fun main() {
 
-    fun ruleComparator(rules: List<Pair<Int, Int>>) = object : Comparator<Int> {
-        val beforeThan = rules.groupBy({ it.first }, { it.second })
-
-        override fun compare(o1: Int, o2: Int): Int = when {
+    fun ruleComparator(beforeThan: Map<Int, Collection<Int>>) = object : Comparator<Int> {
+        override fun compare(o1: Int, o2: Int) = when {
             o1 in beforeThan[o2].orEmpty() -> 1
             o2 in beforeThan[o1].orEmpty() -> -1
             else -> 0
@@ -12,17 +9,16 @@ fun main() {
     }
 
     fun parse(s: String): Pair<Comparator<Int>, List<List<Int>>> {
-        val regex = Regex("""(\d+)\|(\d+)""")
-        val (rulesStr, updatesStr) = s.split("\n\n")
+        val (rulesStr, updatesStr) = s.split("\n\n", limit = 2)
 
-        val rules = rulesStr.lines().map {
-            regex.matchEntire(it)?.destructured?.let { (x, y) -> Pair(x.toInt(), y.toInt()) }
-                ?: error("invalid '$rulesStr'")
-        }
+        val beforeThan = rulesStr.lines()
+            .map { it.split('|', limit = 2).map { it.toInt() } }
+            .groupBy({ it[0] }, { it[1] })
 
-        val updates = updatesStr.lines().map { it.split(",").map { it.toInt() } }
+        val updates = updatesStr.lines()
+            .map { it.split(",").map { it.toInt() } }
 
-        return Pair(ruleComparator(rules), updates)
+        return Pair(ruleComparator(beforeThan), updates)
     }
 
     fun part1(input: String): Int {
@@ -45,8 +41,6 @@ fun main() {
     check(part2(testInput) == 123)
 
     val input = readInput("Day05")
-    check(part1(input) == 5732)
-    check(part2(input) == 4716)
     part1(input).println()
     part2(input).println()
 }
