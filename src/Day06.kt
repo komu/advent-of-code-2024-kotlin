@@ -1,5 +1,3 @@
-import kotlin.time.measureTime
-
 private data class LabMap(val rows: List<String>) {
 
     val coordinates = rows.first().indices.flatMap { x -> rows.indices.map { y -> Point(x, y) } }
@@ -56,7 +54,8 @@ fun main() {
 
     fun part2(input: List<String>): Int {
         val map = LabMap(input)
-        return map.path().count { it != map.start && map.hasLoop(it) }
+        val candidatesObstacles = map.path() - map.start
+        return candidatesObstacles.count { map.hasLoop(it) }
     }
 
     val testInput = readInputLines("Day06_test")
