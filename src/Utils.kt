@@ -20,7 +20,7 @@ fun String.md5() = BigInteger(1, MessageDigest.getInstance("MD5").digest(toByteA
 fun Any?.println() = println(this)
 
 enum class Direction(val dx: Int, val dy: Int) {
-    N(-1, 0), S(1, 0), W(0, -1), E(0, 1), NW(-1, -1), NE(1, -1), SW(-1, 1), SE(1, 1);
+    N(0, -1), S(0, 1), W(-1, 0), E(1, 0), NW(-1, -1), NE(-1, 1), SW(1, -1), SE(1, 1);
 
     fun toVec() = Vec2(dx, dy)
 }
