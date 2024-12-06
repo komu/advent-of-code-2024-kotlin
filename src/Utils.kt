@@ -25,6 +25,19 @@ enum class Direction(val dx: Int, val dy: Int) {
     fun toVec() = Vec2(dx, dy)
 }
 
+enum class CardinalDirection(val dx: Int, val dy: Int) {
+    N(0, -1), S(0, 1), W(-1, 0), E(1, 0);
+
+    fun clockwise(): CardinalDirection = when (this) {
+        N -> E
+        E -> S
+        S -> W
+        W -> N
+    }
+
+    fun toVec() = Vec2(dx, dy)
+}
+
 class Vec2(val x: Int, val y: Int)
 
 operator fun Int.times(v: Vec2) = Vec2(this * v.x, this * v.y)
@@ -33,4 +46,5 @@ operator fun Int.times(d: Direction) = this * d.toVec()
 data class Point(val x: Int, val y: Int) {
     operator fun plus(v: Vec2) = Point(x + v.x, y + v.y)
     operator fun plus(d: Direction) = this + d.toVec()
+    operator fun plus(d: CardinalDirection) = this + d.toVec()
 }
