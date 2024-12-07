@@ -13,8 +13,6 @@ private class Equation(val total: Long, val xs: List<Long>) {
     }
 }
 
-fun Long.concat(y: Long) = pow10(y.countDigits()) + y
-
 fun main() {
 
     fun parse(s: String): Equation {

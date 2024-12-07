@@ -2,6 +2,7 @@ import java.math.BigInteger
 import java.security.MessageDigest
 import kotlin.io.path.Path
 import kotlin.io.path.readText
+import kotlin.math.log10
 
 fun readInput(name: String) = Path("src/$name.txt").readText().trim()
 
@@ -49,18 +50,12 @@ data class Point(val x: Int, val y: Int) {
     operator fun plus(d: CardinalDirection) = this + d.toVec()
 }
 
-fun Long.countDigits(): Int {
-    var count = 0
-    var x = this
-    while (x > 0) {
-        count++
-        x /= 10
+fun Long.concat(y: Long): Long {
+    var xx = this
+    var yy = y
+    while (yy > 0) {
+        yy /= 10
+        xx *= 10
     }
-    return count
-}
-
-fun Long.pow10(p: Int): Long {
-    var x = this
-    repeat(p) { x *= 10 }
-    return x
+    return xx + y
 }
