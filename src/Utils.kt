@@ -48,3 +48,19 @@ data class Point(val x: Int, val y: Int) {
     operator fun plus(d: Direction) = this + d.toVec()
     operator fun plus(d: CardinalDirection) = this + d.toVec()
 }
+
+fun Long.countDigits(): Int {
+    var count = 0
+    var x = this
+    while (x > 0) {
+        count++
+        x /= 10
+    }
+    return count
+}
+
+fun Long.pow10(p: Int): Long {
+    var x = this
+    repeat(p) { x *= 10 }
+    return x
+}
