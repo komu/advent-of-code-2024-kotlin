@@ -2,7 +2,6 @@ import java.math.BigInteger
 import java.security.MessageDigest
 import kotlin.io.path.Path
 import kotlin.io.path.readText
-import kotlin.math.log10
 
 fun readInput(name: String) = Path("src/$name.txt").readText().trim()
 
