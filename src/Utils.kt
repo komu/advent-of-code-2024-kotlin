@@ -38,15 +38,17 @@ enum class CardinalDirection(val dx: Int, val dy: Int) {
     fun toVec() = Vec2(dx, dy)
 }
 
-class Vec2(val x: Int, val y: Int)
+data class Vec2(val x: Int, val y: Int)
 
 operator fun Int.times(v: Vec2) = Vec2(this * v.x, this * v.y)
 operator fun Int.times(d: Direction) = this * d.toVec()
 
 data class Point(val x: Int, val y: Int) {
     operator fun plus(v: Vec2) = Point(x + v.x, y + v.y)
+    operator fun minus(v: Vec2) = Point(x - v.x, y - v.y)
     operator fun plus(d: Direction) = this + d.toVec()
     operator fun plus(d: CardinalDirection) = this + d.toVec()
+    operator fun minus(p: Point) = Vec2(x - p.x, y - p.y)
 }
 
 fun Long.concat(y: Long): Long {
@@ -58,3 +60,6 @@ fun Long.concat(y: Long): Long {
     }
     return xx + y
 }
+
+fun <T> List<T>.choosePairs(): List<Pair<T, T>> =
+    withIndex().flatMap { (index, a) -> subList(index + 1, size).map { b -> a to b } }
