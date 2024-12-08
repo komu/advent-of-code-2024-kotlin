@@ -1,5 +1,5 @@
-private fun antinodes(points: List<Point>, range: IntRange, bounds: Bounds) = buildSet {
-    for ((a, b) in points.choosePairs()) {
+private fun antinodes(antennas: List<Point>, range: IntRange, bounds: Bounds) = buildSet {
+    for ((a, b) in antennas.choosePairs()) {
         val v = a - b
 
         for (i in range) {
@@ -32,8 +32,8 @@ fun main() {
             .flatMap { (_, ps) -> antinodes(ps, range, bounds) }.toSet().size
     }
 
-    fun part1(input: String) = solve(input, 1..1)
-    fun part2(input: String) = solve(input, 0..Int.MAX_VALUE)
+fun part1(input: String) = solve(input, 1..1)
+fun part2(input: String) = solve(input, 0..Int.MAX_VALUE)
 
     val testInput = readInput("Day08_test")
     check(part1(testInput) == 14)
