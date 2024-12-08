@@ -51,6 +51,10 @@ data class Point(val x: Int, val y: Int) {
     operator fun minus(p: Point) = Vec2(x - p.x, y - p.y)
 }
 
+data class Bounds(val xRange: IntRange, val yRange: IntRange) {
+    operator fun contains(p: Point) = p.y in yRange && p.x in xRange
+}
+
 fun Long.concat(y: Long): Long {
     var xx = this
     var yy = y

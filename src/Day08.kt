@@ -1,60 +1,39 @@
-private class AntennaMap(val rows: List<String>) {
+private fun antinodes(points: List<Point>, range: IntRange, bounds: Bounds) = buildSet {
+    for ((a, b) in points.choosePairs()) {
+        val v = a - b
 
-    val coordinates = rows.first().indices.flatMap { x -> rows.indices.map { y -> Point(x, y) } }.toSet()
-    operator fun get(p: Point): Char? = rows.getOrNull(p.y)?.getOrNull(p.x)
-    operator fun contains(p: Point) = p in coordinates
+        for (i in range) {
+            val p = a + i * v
+            if (p in bounds)
+                add(p)
+            else
+                break
+        }
 
-    val antennasByType = coordinates
-        .map { it to this[it]!! }
-        .filter { it.second != '.' }
-        .groupBy({ it.second }, { it.first })
+        for (i in range) {
+            val p = b - i * v
+            if (p in bounds)
+                add(p)
+            else
+                break
+        }
+    }
 }
 
 fun main() {
+    fun solve(input: String, range: IntRange): Int {
+        val rows = input.lines()
+        val bounds = Bounds(xRange = rows[0].indices, yRange = rows.indices)
 
-    fun part1(input: String): Int {
-        val map = AntennaMap(input.lines())
-
-        fun antinodes(points: List<Point>) = buildSet {
-            for ((a, b) in points.choosePairs()) {
-                val v = a - b
-
-                val p1 = a + v
-                if (p1 in map)
-                    add(p1)
-
-                val p2 = b - v
-                if (p2 in map)
-                    add(p2)
-            }
-        }
-
-        return map.antennasByType.values.flatMap { antinodes(it) }.toSet().size
+        return rows.withIndex()
+            .flatMap { (y, row) -> row.withIndex().map { (x, v) -> v to Point(x, y) } }
+            .filter { (c, _) -> c != '.' }
+            .groupBy({ it.first }, { it.second })
+            .flatMap { (_, ps) -> antinodes(ps, range, bounds) }.toSet().size
     }
 
-    fun part2(input: String): Int {
-        val map = AntennaMap(input.lines())
-
-        fun antinodes2(points: List<Point>) = buildSet {
-            for ((a, b) in points.choosePairs()) {
-                val v = a - b
-
-                var p1 = a
-                while (p1 in map) {
-                    add(p1)
-                    p1 += v
-                }
-
-                var p2 = b
-                while (p2 in map) {
-                    add(p2)
-                    p2 -= v
-                }
-            }
-        }
-
-        return map.antennasByType.values.flatMap { antinodes2(it) }.toSet().size
-    }
+    fun part1(input: String) = solve(input, 1..1)
+    fun part2(input: String) = solve(input, 0..Int.MAX_VALUE)
 
     val testInput = readInput("Day08_test")
     check(part1(testInput) == 14)
