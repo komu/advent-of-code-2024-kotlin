@@ -71,13 +71,8 @@ fun <T> List<T>.choosePairs(): List<Pair<T, T>> =
 val IntRange.size: Int
     get() = if (isEmpty()) 0 else last - first + 1
 
-fun <T> MutableList<T>.copy(src: IntRange, dst: Int) {
-    var d = dst
-    for (i in src)
-        this[d++] = this[i]
-}
+fun sum(range: IntRange): Int =
+    sumFromZeroTo(range.endInclusive) - sumFromZeroTo(range.start - 1)
 
-fun <T> MutableList<T>.set(src: IntRange, value: T) {
-    for (i in src)
-        this[i] = value
-}
+private fun sumFromZeroTo(n: Int) =
+    ((n.toLong() * (n + 1)) / 2).toInt()

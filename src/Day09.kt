@@ -1,14 +1,64 @@
-private class Buffer(input: String) {
-    val buffer = mutableListOf<Int?>()
+private class SegmentBuffer(input: String) {
+    val files = mutableListOf<File>()
+    val frees = mutableListOf<Free>()
 
     init {
-        for ((id, chunk) in input.toList().chunked(2).withIndex()) {
-            buffer += List(chunk[0].digitToInt()) { id }
-            buffer += List(chunk.getOrNull(1)?.digitToInt() ?: 0) { null }
+        var offset = 0
+        for ((id, chunk) in input.map { it.digitToInt() }.chunked(2).withIndex()) {
+            val file = File(id, offset, chunk[0])
+            files += file
+            offset += file.blocks
+            if (chunk.size == 2 && chunk[1] != 0) {
+                val free = Free(offset, chunk[1])
+                frees += free
+                offset += free.blocks
+            }
         }
     }
 
-    fun defrag1() {
+    fun defrag(): Long {
+        var checksum = 0L
+
+        val cleanupRounds = 250
+        var cleanupCounter = cleanupRounds
+
+        for (file in files.asReversed()) {
+            val free = frees.asSequence().takeWhile { it.offset < file.offset }.find { it.blocks >= file.blocks }
+            checksum += checksum(file.id, free?.offset ?: file.offset, file.blocks)
+
+            free?.consume(file.blocks)
+
+            if (--cleanupCounter <= 0) {
+                frees.removeIf { it.blocks == 0 }
+                cleanupCounter = cleanupRounds
+            }
+        }
+
+        return checksum
+    }
+
+    fun checksum(id: Int, offset: Int, blocks: Int) = id.toLong() * sum(offset..<offset + blocks)
+
+    class File(val id: Int, val offset: Int, val blocks: Int)
+
+    class Free(var offset: Int, var blocks: Int) {
+        fun consume(blocks: Int) {
+            this.offset += blocks
+            this.blocks -= blocks
+        }
+    }
+}
+
+
+fun main() {
+    fun part1(input: String): Long {
+        val buffer = mutableListOf<Int?>().apply {
+            for ((id, chunk) in input.map { it.digitToInt() }.chunked(2).withIndex()) {
+                addAll(List(chunk[0]) { id })
+                addAll(List(chunk.getOrNull(1) ?: 0) { null })
+            }
+        }
+
         val emptyIndices = buffer.withIndex()
             .mapNotNull { (i, v) -> i.takeIf { v == null } }
             .asReversed()
@@ -18,58 +68,11 @@ private class Buffer(input: String) {
             val last = buffer.removeLast() ?: continue
             buffer[emptyIndices.removeLast()] = last
         }
+
+        return buffer.withIndex().sumOf { (i, s) -> i.toLong() * (s?.toLong() ?: 0) }
     }
 
-    fun defrag2() {
-        var index = buffer.lastIndex
-        while (index > 0) {
-            if (buffer[index] == null) {
-                index--
-            } else {
-                val block = findBlock(index)
-
-                val freeIndex = findFreeBlockBefore(block)
-                if (freeIndex != null) {
-                    buffer.copy(block, freeIndex)
-                    buffer.set(block, null)
-                }
-
-                index -= block.size
-            }
-        }
-    }
-
-    fun findFreeBlockBefore(block: IntRange) =
-        (0..<block.first).find { start ->
-            start + block.size < buffer.size && (0..<block.size).all { offset -> buffer[start + offset] == null }
-        }
-
-    fun findBlock(end: Int): IntRange {
-        val c = buffer[end] ?: error("no value at $end")
-
-        var start = end
-        while (start > 0 && buffer[start - 1] == c)
-            start--
-
-        return start..end
-    }
-
-    fun checksum() = buffer.withIndex().sumOf { (i, s) -> i.toLong() * (s?.toLong() ?: 0) }
-}
-
-
-fun main() {
-    fun part1(input: String): Long {
-        val buffer = Buffer(input)
-        buffer.defrag1()
-        return buffer.checksum()
-    }
-
-    fun part2(input: String): Long {
-        val buffer = Buffer(input)
-        buffer.defrag2()
-        return buffer.checksum()
-    }
+    fun part2(input: String) = SegmentBuffer(input).defrag()
 
     val testInput = readInput("Day09_test")
     check(part1(testInput) == 1928L)
