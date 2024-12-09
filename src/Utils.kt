@@ -67,3 +67,17 @@ fun Long.concat(y: Long): Long {
 
 fun <T> List<T>.choosePairs(): List<Pair<T, T>> =
     withIndex().flatMap { (index, a) -> subList(index + 1, size).map { b -> a to b } }
+
+val IntRange.size: Int
+    get() = if (isEmpty()) 0 else last - first + 1
+
+fun <T> MutableList<T>.copy(src: IntRange, dst: Int) {
+    var d = dst
+    for (i in src)
+        this[d++] = this[i]
+}
+
+fun <T> MutableList<T>.set(src: IntRange, value: T) {
+    for (i in src)
+        this[i] = value
+}
