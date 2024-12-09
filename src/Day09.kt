@@ -17,24 +17,21 @@ private class SegmentBuffer(input: String) {
     }
 
     fun defrag(): Long {
-        var checksum = 0L
+        var cleanupCounter = 0
 
-        val cleanupRounds = 250
-        var cleanupCounter = cleanupRounds
-
-        for (file in files.asReversed()) {
+        return files.asReversed().sumOf { file ->
             val free = frees.asSequence().takeWhile { it.offset < file.offset }.find { it.blocks >= file.blocks }
-            checksum += checksum(file.id, free?.offset ?: file.offset, file.blocks)
+            val targetOffset = free?.offset ?: file.offset
 
             free?.consume(file.blocks)
 
-            if (--cleanupCounter <= 0) {
+            if (cleanupCounter++ >= 250) {
                 frees.removeIf { it.blocks == 0 }
-                cleanupCounter = cleanupRounds
+                cleanupCounter = 0
             }
-        }
 
-        return checksum
+            checksum(file.id, targetOffset, file.blocks)
+        }
     }
 
     fun checksum(id: Int, offset: Int, blocks: Int) = id.toLong() * sum(offset..<offset + blocks)
