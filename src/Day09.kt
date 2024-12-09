@@ -1,51 +1,62 @@
-private class SegmentBuffer(input: String) {
-    val files = mutableListOf<File>()
-    val frees = mutableListOf<Free>()
+import kotlin.time.measureTime
 
-    init {
-        var offset = 0
-        for ((id, chunk) in input.map { it.digitToInt() }.chunked(2).withIndex()) {
-            val file = File(id, offset, chunk[0])
-            files += file
-            offset += file.blocks
-            if (chunk.size == 2 && chunk[1] != 0) {
-                val free = Free(offset, chunk[1])
-                frees += free
-                offset += free.blocks
-            }
-        }
+private fun defrag1(buffer: MutableList<Int?>): Long {
+    val emptyIndices = buffer.withIndex()
+        .mapNotNull { (i, v) -> i.takeIf { v == null } }
+        .asReversed()
+        .toMutableList()
+
+    while (emptyIndices.last() < buffer.size) {
+        val last = buffer.removeLast() ?: continue
+        buffer[emptyIndices.removeLast()] = last
     }
 
-    fun defrag(): Long {
-        var cleanupCounter = 0
+    return buffer.withIndex().sumOf { (i, s) -> i.toLong() * (s?.toLong() ?: 0) }
+}
 
-        return files.asReversed().sumOf { file ->
-            val free = frees.asSequence().takeWhile { it.offset < file.offset }.find { it.blocks >= file.blocks }
-            val targetOffset = free?.offset ?: file.offset
+private fun defrag2(files: List<File>, frees: MutableList<Free>): Long {
+    var cleanupCounter = 0
 
-            free?.consume(file.blocks)
+    return files.asReversed().sumOf { file ->
+        val free = frees.findFirstFree(file)
 
-            if (cleanupCounter++ >= 250) {
-                frees.removeIf { it.blocks == 0 }
-                cleanupCounter = 0
-            }
+        val targetOffset = free?.offset ?: file.offset
 
-            checksum(file.id, targetOffset, file.blocks)
+        if (free != null) {
+            free.consume(file.blocks)
+            if (free.blocks == 0)
+                cleanupCounter++
         }
-    }
 
-    fun checksum(id: Int, offset: Int, blocks: Int) = id.toLong() * sum(offset..<offset + blocks)
-
-    class File(val id: Int, val offset: Int, val blocks: Int)
-
-    class Free(var offset: Int, var blocks: Int) {
-        fun consume(blocks: Int) {
-            this.offset += blocks
-            this.blocks -= blocks
+        if (cleanupCounter >= 250) {
+            frees.removeIf { it.blocks == 0 }
+            cleanupCounter = 0
         }
+
+        file.id.toLong() * sum(targetOffset..<targetOffset + file.blocks)
     }
 }
 
+private fun List<Free>.findFirstFree(file: File): Free? {
+    // Explicit loop improves 20% over:
+    //    asSequence().takeWhile { it.offset < file.offset }.find { it.blocks >= file.blocks }
+    for (free in this) {
+        if (free.offset >= file.offset)
+            break
+        if (free.blocks >= file.blocks)
+            return free
+    }
+    return null
+}
+
+private class File(val id: Int, val offset: Int, val blocks: Int)
+
+private class Free(var offset: Int, var blocks: Int) {
+    fun consume(blocks: Int) {
+        this.offset += blocks
+        this.blocks -= blocks
+    }
+}
 
 fun main() {
     fun part1(input: String): Long {
@@ -56,20 +67,27 @@ fun main() {
             }
         }
 
-        val emptyIndices = buffer.withIndex()
-            .mapNotNull { (i, v) -> i.takeIf { v == null } }
-            .asReversed()
-            .toMutableList()
-
-        while (emptyIndices.last() < buffer.size) {
-            val last = buffer.removeLast() ?: continue
-            buffer[emptyIndices.removeLast()] = last
-        }
-
-        return buffer.withIndex().sumOf { (i, s) -> i.toLong() * (s?.toLong() ?: 0) }
+        return defrag1(buffer)
     }
 
-    fun part2(input: String) = SegmentBuffer(input).defrag()
+    fun part2(input: String): Long {
+        var offset = 0
+        val files = mutableListOf<File>()
+        val frees = mutableListOf<Free>()
+
+        for ((id, chunk) in input.map { it.digitToInt() }.chunked(2).withIndex()) {
+            val fileSize = chunk[0]
+            val freeSize = chunk.getOrNull(1) ?: 0
+
+            files += File(id, offset, fileSize)
+            if (freeSize != 0)
+                frees += Free(offset + fileSize, freeSize)
+
+            offset += fileSize + freeSize
+        }
+
+        return defrag2(files, frees)
+    }
 
     val testInput = readInput("Day09_test")
     check(part1(testInput) == 1928L)
