@@ -1,42 +1,38 @@
-class TrailMap(val rows: List<String>) {
+private class TrailMap(val rows: List<String>) {
 
-    val coordinates = rows.first().indices.flatMap { x -> rows.indices.map { y -> Point(x, y) } }
-    val trailheads = coordinates.filter { this[it] == 0 }
-    operator fun get(p: Point): Int? = rows.getOrNull(p.y)?.getOrNull(p.x)?.digitToInt()
-
-    fun pathEnds(start: Point): Collection<Point> {
-        val nines = mutableListOf<Point>()
-
-        fun recurse(p: Point, level: Int) {
-            if (level == 9) {
-                nines.add(p)
-                return
-            }
-            val next = level + 1
-
-            for (d in CardinalDirection.entries) {
-                val neighbor = p + d
-                if (this[neighbor] == next) {
-                    recurse(neighbor, next)
-                }
-            }
-        }
-
-        recurse(start, 0)
-
-        return nines
+    val trailheads = rows.withIndex().flatMap { (y, row) ->
+        row.withIndex().filter { (_, c) -> c == '0' }.map { (x, _) -> Point(x, y) }
     }
+
+    operator fun get(p: Point) = rows.getOrNull(p.y)?.getOrNull(p.x)
+}
+
+private fun pathEnds(map: TrailMap, start: Point): Collection<Point> {
+    val nines = mutableListOf<Point>()
+
+    fun recurse(p: Point, expectedLevel: Char) {
+        if (map[p] == expectedLevel) {
+            if (expectedLevel == '9')
+                nines.add(p)
+            else for (d in CardinalDirection.entries)
+                recurse(p + d, expectedLevel + 1)
+        }
+    }
+
+    recurse(start, '0')
+
+    return nines
 }
 
 fun main() {
     fun part1(input: String): Int {
         val map = TrailMap(input.lines())
-        return map.trailheads.sumOf { map.pathEnds(it).toSet().size }
+        return map.trailheads.sumOf { pathEnds(map, it).toSet().size }
     }
 
     fun part2(input: String): Int {
         val map = TrailMap(input.lines())
-        return map.trailheads.sumOf { map.pathEnds(it).size }
+        return map.trailheads.sumOf { pathEnds(map, it).size }
     }
 
     val testInput = readInput("Day10_test")
