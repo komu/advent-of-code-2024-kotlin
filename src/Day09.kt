@@ -1,5 +1,3 @@
-import kotlin.time.measureTime
-
 private fun defrag1(buffer: MutableList<Int?>): Long {
     val emptyIndices = buffer.withIndex()
         .mapNotNull { (i, v) -> i.takeIf { v == null } }
