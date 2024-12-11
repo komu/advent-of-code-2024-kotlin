@@ -2,6 +2,7 @@ import java.math.BigInteger
 import java.security.MessageDigest
 import kotlin.io.path.Path
 import kotlin.io.path.readText
+import kotlin.math.log10
 
 fun readInput(name: String) = Path("src/$name.txt").readText().trim()
 
@@ -76,3 +77,9 @@ fun sum(range: IntRange): Int =
 
 private fun sumFromZeroTo(n: Int) =
     ((n.toLong() * (n + 1)) / 2).toInt()
+
+fun countDigits(n: Long): Int {
+    require(n >= 0)
+    if (n == 0L) return 1
+    return (log10(n.toDouble()) + 1).toInt()
+}
