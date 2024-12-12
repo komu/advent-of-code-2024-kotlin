@@ -2,6 +2,7 @@ import java.math.BigInteger
 import java.security.MessageDigest
 import kotlin.io.path.Path
 import kotlin.io.path.readText
+import kotlin.math.abs
 import kotlin.math.log10
 
 fun readInput(name: String) = Path("src/$name.txt").readText().trim()
@@ -43,6 +44,9 @@ data class Vec2(val x: Int, val y: Int) {
     fun squaredMagnitude() = x * x + y * y
 }
 
+operator fun Point.minus(vs: Iterable<Vec2>) = vs.map { this - it }
+operator fun Point.plus(vs: Iterable<Vec2>) = vs.map { this + it }
+
 operator fun Int.times(v: Vec2) = Vec2(this * v.x, this * v.y)
 operator fun Int.times(d: Direction) = this * d.toVec()
 
@@ -55,6 +59,9 @@ data class Point(val x: Int, val y: Int) {
 
     fun isCardinalNeighbor(p: Point) =
         (this - p).squaredMagnitude() == 1
+
+    fun isDiagonalNeighbor(p: Point) =
+        abs(x - p.x) == 1 && abs(y - p.y) == 1
 }
 
 data class Bounds(val xRange: IntRange, val yRange: IntRange) {
