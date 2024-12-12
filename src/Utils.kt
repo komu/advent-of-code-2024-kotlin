@@ -57,12 +57,15 @@ data class Point(val x: Int, val y: Int) {
     operator fun plus(d: CardinalDirection) = this + d.toVec()
     operator fun minus(p: Point) = Vec2(x - p.x, y - p.y)
 
-    fun isCardinalNeighbor(p: Point) =
-        (this - p).squaredMagnitude() == 1
+    val cardinalNeighbors: Collection<Point>
+        get() = CardinalDirection.entries.map { this + it }
 
-    fun isDiagonalNeighbor(p: Point) =
-        abs(x - p.x) == 1 && abs(y - p.y) == 1
+    fun squaredDistance(p: Point) = square(x - p.x) + square(y - p.y)
+    fun isCardinalNeighbor(p: Point) = squaredDistance(p) == 1
+    fun isDiagonalNeighbor(p: Point) = abs(x - p.x) == 1 && abs(y - p.y) == 1
 }
+
+fun square(x: Int) = x*x
 
 data class Bounds(val xRange: IntRange, val yRange: IntRange) {
     operator fun contains(p: Point) = p.y in yRange && p.x in xRange
@@ -106,18 +109,13 @@ fun <T> T.trace(prefix: String? = null): T {
     return this
 }
 
-fun valuesWithPoints(grid: List<String>): List<Pair<Point, Char>> =
-    grid.withIndex().flatMap { (y, row) -> row.withIndex().map { (x, c) -> Point(x, y) to c } }
-
 fun floodFillCardinal(initial: Point, accept: (Point) -> Boolean): Set<Point> {
     val result = mutableSetOf<Point>(initial)
 
     fun recurse(p: Point) {
-        for (d in CardinalDirection.entries) {
-            val n = p + d
+        for (n in p.cardinalNeighbors)
             if (accept(n) && result.add(n))
                 recurse(n)
-        }
     }
 
     recurse(initial)

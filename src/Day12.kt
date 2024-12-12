@@ -1,15 +1,14 @@
 private fun extractRegions(input: String): List<Set<Point>> {
-    val rows = input.lines()
-
-    fun get(p: Point) = rows.getOrNull(p.y)?.getOrNull(p.x) ?: '.'
+    val grid = CharGrid(input)
 
     val seen = mutableSetOf<Point>()
 
     return buildList {
-        for ((p, type) in valuesWithPoints(rows)) {
+        for (p in grid.points) {
             if (p in seen) continue
 
-            val points = floodFillCardinal(p) { get(it) == type }
+            val type = grid[p]
+            val points = floodFillCardinal(p) { grid[it] == type }
             add(points)
             seen += points
         }
