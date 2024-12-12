@@ -39,7 +39,9 @@ enum class CardinalDirection(val dx: Int, val dy: Int) {
     fun toVec() = Vec2(dx, dy)
 }
 
-data class Vec2(val x: Int, val y: Int)
+data class Vec2(val x: Int, val y: Int) {
+    fun squaredMagnitude() = x * x + y * y
+}
 
 operator fun Int.times(v: Vec2) = Vec2(this * v.x, this * v.y)
 operator fun Int.times(d: Direction) = this * d.toVec()
@@ -50,6 +52,9 @@ data class Point(val x: Int, val y: Int) {
     operator fun plus(d: Direction) = this + d.toVec()
     operator fun plus(d: CardinalDirection) = this + d.toVec()
     operator fun minus(p: Point) = Vec2(x - p.x, y - p.y)
+
+    fun isCardinalNeighbor(p: Point) =
+        (this - p).squaredMagnitude() == 1
 }
 
 data class Bounds(val xRange: IntRange, val yRange: IntRange) {
@@ -69,6 +74,9 @@ fun Long.concat(y: Long): Long {
 fun <T> List<T>.choosePairs(): List<Pair<T, T>> =
     withIndex().flatMap { (index, a) -> subList(index + 1, size).map { b -> a to b } }
 
+fun <T> Collection<T>.choosePairs(): List<Pair<T, T>> =
+    toList().choosePairs()
+
 val IntRange.size: Int
     get() = if (isEmpty()) 0 else last - first + 1
 
@@ -82,4 +90,29 @@ fun countDigits(n: Long): Int {
     require(n >= 0)
     if (n == 0L) return 1
     return (log10(n.toDouble()) + 1).toInt()
+}
+
+fun <T> T.trace(prefix: String? = null): T {
+    if (prefix != null)
+        print("$prefix: ")
+    println(this)
+    return this
+}
+
+fun valuesWithPoints(grid: List<String>): List<Pair<Point, Char>> =
+    grid.withIndex().flatMap { (y, row) -> row.withIndex().map { (x, c) -> Point(x, y) to c } }
+
+fun floodFillCardinal(initial: Point, accept: (Point) -> Boolean): Set<Point> {
+    val result = mutableSetOf<Point>(initial)
+
+    fun recurse(p: Point) {
+        for (d in CardinalDirection.entries) {
+            val n = p + d
+            if (accept(n) && result.add(n))
+                recurse(n)
+        }
+    }
+
+    recurse(initial)
+    return result
 }
