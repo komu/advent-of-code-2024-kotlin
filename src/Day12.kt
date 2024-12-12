@@ -1,18 +1,22 @@
-private fun extractRegions(input: String): List<Set<Point>> {
-    val grid = CharGrid(input)
+/** Converts character grid to int-grid so that each region gets its own numeric non-zero id. */
+private fun CharGrid.normalizeRegions(): IntGrid {
+    val uninitialized = 0
+    val result = IntGrid(width, height, uninitialized)
 
-    val seen = mutableSetOf<Point>()
+    var id = 1
+    for ((p, type) in pointsWithValues)
+        if (result[p] == uninitialized)
+            result.flood(p, value = id++, Point::cardinalNeighbors) { this[it] == type && result[it] == uninitialized }
 
-    return buildList {
-        for (p in grid.points) {
-            if (p in seen) continue
+    return result
+}
 
-            val type = grid[p]
-            val points = floodFillCardinal(p) { grid[it] == type }
-            add(points)
-            seen += points
-        }
-    }
+private fun extractRegions(input: String): Collection<Set<Point>> {
+    val grid = CharGrid(input).normalizeRegions()
+    return grid.pointsWithValues
+        .groupBy({ it.second }, { it.first })
+        .values
+        .map { it.toSet() }
 }
 
 private fun perimeter(region: Set<Point>): Int {

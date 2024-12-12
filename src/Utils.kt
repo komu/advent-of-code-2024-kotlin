@@ -42,6 +42,9 @@ enum class CardinalDirection(val dx: Int, val dy: Int) {
 
 data class Vec2(val x: Int, val y: Int) {
     fun squaredMagnitude() = x * x + y * y
+    companion object {
+        val ZERO = Vec2(0, 0)
+    }
 }
 
 operator fun Point.minus(vs: Iterable<Vec2>) = vs.map { this - it }
@@ -107,17 +110,4 @@ fun <T> T.trace(prefix: String? = null): T {
         print("$prefix: ")
     println(this)
     return this
-}
-
-fun floodFillCardinal(initial: Point, accept: (Point) -> Boolean): Set<Point> {
-    val result = mutableSetOf<Point>(initial)
-
-    fun recurse(p: Point) {
-        for (n in p.cardinalNeighbors)
-            if (accept(n) && result.add(n))
-                recurse(n)
-    }
-
-    recurse(initial)
-    return result
 }

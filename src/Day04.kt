@@ -2,7 +2,7 @@ import Direction.*
 
 fun main() {
     fun part1(input: String): Int {
-        val grid = CharGrid(input, '.')
+        val grid = CharGrid(input)
 
         return grid.points.sumOf { p ->
             Direction.entries.count { d ->
@@ -14,11 +14,12 @@ fun main() {
     }
 
     fun part2(input: String): Int {
-        val grid = CharGrid(input, '.')
+        val grid = CharGrid(input)
+        val deltas = listOf(Vec2.ZERO, NW.toVec(), NE.toVec(), SE.toVec(), SW.toVec())
         val validSignatures = setOf("AMMSS", "AMSSM", "ASMMS", "ASSMM")
 
         return grid.points.count { p ->
-            val signature = charArrayOf(grid[p], grid[p + NW], grid[p + NE], grid[p + SE], grid[p + SW]).concatToString()
+            val signature = deltas.map { grid[p + it] }.joinToString("")
             signature in validSignatures
         }
     }
