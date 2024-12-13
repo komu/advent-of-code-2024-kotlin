@@ -41,17 +41,34 @@ enum class CardinalDirection(val dx: Int, val dy: Int) {
 }
 
 data class Vec2(val x: Int, val y: Int) {
+    operator fun plus(v: Vec2) = Vec2(x + v.x, y + v.y)
+    operator fun minus(v: Vec2) = Vec2(x - v.x, y - v.y)
     fun squaredMagnitude() = x * x + y * y
+
     companion object {
         val ZERO = Vec2(0, 0)
     }
 }
 
+fun det(v: Vec2D, u: Vec2D) = v.x * u.y - v.y * u.x
 operator fun Point.minus(vs: Iterable<Vec2>) = vs.map { this - it }
 operator fun Point.plus(vs: Iterable<Vec2>) = vs.map { this + it }
 
 operator fun Int.times(v: Vec2) = Vec2(this * v.x, this * v.y)
 operator fun Int.times(d: Direction) = this * d.toVec()
+
+data class LongVec2(val x: Long, val y: Long) {
+    operator fun plus(v: LongVec2) = LongVec2(x + v.x, y + v.y)
+    operator fun minus(v: LongVec2) = LongVec2(x - v.x, y - v.y)
+}
+
+operator fun Int.times(v: LongVec2) = LongVec2(this * v.x, this * v.y)
+operator fun Long.times(v: LongVec2) = LongVec2(this * v.x, this * v.y)
+
+data class Vec2D(val x: Double, val y: Double) {
+    operator fun plus(v: Vec2D) = Vec2D(x + v.x, y + v.y)
+    operator fun minus(v: Vec2D) = Vec2D(x - v.x, y - v.y)
+}
 
 data class Point(val x: Int, val y: Int) {
     operator fun plus(v: Vec2) = Point(x + v.x, y + v.y)
@@ -68,7 +85,7 @@ data class Point(val x: Int, val y: Int) {
     fun isDiagonalNeighbor(p: Point) = abs(x - p.x) == 1 && abs(y - p.y) == 1
 }
 
-fun square(x: Int) = x*x
+fun square(x: Int) = x * x
 
 data class Bounds(val xRange: IntRange, val yRange: IntRange) {
     operator fun contains(p: Point) = p.y in yRange && p.x in xRange
@@ -111,3 +128,13 @@ fun <T> T.trace(prefix: String? = null): T {
     println(this)
     return this
 }
+
+fun gcd(a: Long, b: Long): Long =
+    if (b == 0L) a else gcd(b, a % b)
+
+fun lcm(a: Long, b: Long): Long =
+    a / gcd(a, b) * b
+
+fun lcd(xs: List<Long>): Long =
+    xs.fold(1, ::lcm)
+
