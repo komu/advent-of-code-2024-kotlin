@@ -3,6 +3,7 @@ import java.security.MessageDigest
 import kotlin.io.path.Path
 import kotlin.io.path.readText
 import kotlin.math.abs
+import kotlin.math.floor
 import kotlin.math.log10
 
 fun readInput(name: String) = Path("src/$name.txt").readText().trim()
@@ -138,3 +139,4 @@ fun lcm(a: Long, b: Long): Long =
 fun lcd(xs: List<Long>): Long =
     xs.fold(1, ::lcm)
 
+fun isInteger(x: Double) = floor(x) == x

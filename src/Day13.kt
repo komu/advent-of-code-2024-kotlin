@@ -1,13 +1,11 @@
-import kotlin.math.floor
-
 fun main() {
     fun tokens(a: Vec2D, b: Vec2D, c: Vec2D): Long {
         // Cramer's rule
-        val pa = det(c, b) / det(a, b)
-        val pb = det(a, c) / det(a, b)
+        val x = det(c, b) / det(a, b)
+        val y = det(a, c) / det(a, b)
 
-        return if (pa == floor(pa) && pb == floor(pb))
-            (3 * pa + pb).toLong()
+        return if (isInteger(x) && isInteger(y))
+            (3 * x + y).toLong()
         else
             0
     }
