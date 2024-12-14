@@ -1,13 +1,14 @@
-private class Robot(var p: Point, val v: Vec2) {
-    fun move(space: Space = Space.real) {
-        p = Point(
-            x = (p.x + v.x + space.w) % space.w,
-            y = (p.y + v.y + space.h) % space.h,
-        )
-    }
-}
+private class Robot(var p: Point, val v: Vec2)
 
-private class Space(val w: Int, val h: Int) {
+private class RobotSpace(val w: Int, val h: Int, val robots: List<Robot>) {
+
+    fun tick() {
+        for (robot in robots)
+            robot.p = Point(
+                x = (robot.p.x + robot.v.x + w) % w,
+                y = (robot.p.y + robot.v.y + h) % h,
+            )
+    }
 
     fun quadrantOf(p: Point): Int {
         val midX = w / 2
@@ -22,59 +23,65 @@ private class Space(val w: Int, val h: Int) {
         }
     }
 
+    fun hasTree(): Boolean {
+        val points = PointSet(w, h)
+
+        for (robot in robots)
+            points.add(robot.p)
+
+        return robots.any { points.containsSums(it.p, neighbors) }
+    }
+
+    fun checksum() =
+        robots.groupingBy { quadrantOf(it.p) }
+            .eachCount()
+            .filter { it.key != 0 }
+            .values
+            .product()
+
     companion object {
-        val test = Space(11, 7)
-        val real = Space(101, 103)
+        val neighbors = Direction.entries.map { it.toVec() }
     }
 }
 
 fun main() {
 
-    fun parse(input: String): List<Robot> {
+    fun parse(input: String, w: Int, h: Int): RobotSpace {
         val regex = Regex("""p=(-?\d+),(-?\d+) v=(-?\d+),(-?\d+)""")
 
-        return input.lines().map { s ->
+        return RobotSpace(w, h, robots = input.lines().map { s ->
             val (x, y, vx, vy) = regex.matchEntire(s)?.destructured ?: error("invalid input line '$s'")
             Robot(Point(x.toInt(), y.toInt()), Vec2(vx.toInt(), vy.toInt()))
-        }
+        })
     }
 
-    fun part1(input: String, space: Space): Long {
-        val robots = parse(input)
+    fun part1(input: String, w: Int, h: Int): Int {
+        val space = parse(input, w, h)
 
         repeat(100) {
-            for (robot in robots)
-                robot.move(space)
+            space.tick()
         }
 
-        val a = robots.groupBy { space.quadrantOf(it.p) }
-        return a[1]!!.size.toLong() * a[2]!!.size.toLong() * a[3]!!.size.toLong() * a[4]!!.size.toLong()
+        return space.checksum()
     }
 
-    fun isTree(robots: List<Robot>): Boolean {
-        // search for a 3x3 clump of points
-        val points = robots.map { it.p }.toSet()
-        return points.any { p ->  p.neighbors.all { n -> n in points }}
-    }
-
-    fun part2(input: String): Int {
-        val robots = parse(input)
+    fun part2(input: String, w: Int, h: Int): Int {
+        val space = parse(input, w, h)
 
         repeat(Int.MAX_VALUE) { seconds ->
-            if (isTree(robots))
+            if (space.hasTree())
                 return seconds
 
-            for (robot in robots)
-                robot.move()
+            space.tick()
         }
 
         error("tree not found")
     }
 
     val testInput = readInput("Day14_test")
-    check(part1(testInput, Space.test) == 12L)
+    check(part1(testInput, 11, 7) == 12)
 
     val input = readInput("Day14")
-    part1(input, Space.real).println()
-    part2(input).println()
+    part1(input, 101, 103).println()
+    part2(input, 101, 103).println()
 }

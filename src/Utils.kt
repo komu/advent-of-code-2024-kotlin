@@ -1,5 +1,6 @@
 import java.math.BigInteger
 import java.security.MessageDigest
+import java.util.*
 import kotlin.io.path.Path
 import kotlin.io.path.readText
 import kotlin.math.abs
@@ -117,6 +118,8 @@ val IntRange.size: Int
 fun sum(range: IntRange): Int =
     sumFromZeroTo(range.endInclusive) - sumFromZeroTo(range.start - 1)
 
+fun Iterable<Int>.product() = fold(1) { acc, x -> acc * x }
+
 private fun sumFromZeroTo(n: Int) =
     ((n.toLong() * (n + 1)) / 2).toInt()
 
@@ -143,3 +146,41 @@ fun lcd(xs: List<Long>): Long =
     xs.fold(1, ::lcm)
 
 fun isInteger(x: Double) = floor(x) == x
+
+fun drawSet(yRange: IntRange, xRange: IntRange, points: Collection<Point>) {
+    for (y in yRange) {
+        for (x in xRange) {
+            if (Point(x, y) in points)
+                print('#')
+            else
+                print('.')
+        }
+        println()
+    }
+}
+
+class PointSet(val w: Int, val h: Int) {
+    private val points = BitSet(w * h)
+
+    fun add(p: Point) {
+        points.set(index(p))
+    }
+
+    fun remove(p: Point) {
+        points.clear(index(p))
+    }
+
+    fun contains(x: Int, y: Int) = x in 0 until w && y in 0 until h && points[index(x, y)]
+
+    operator fun contains(p: Point) = contains(p.x, p.y)
+
+    fun containsSums(p: Point, vs: Iterable<Vec2>) =
+        vs.all { contains(p.x + it.x, p.y + it.y) }
+
+    fun clear() {
+        points.clear()
+    }
+
+    private fun index(p: Point) = index(p.x, p.y)
+    private fun index(x: Int, y: Int) = y * w + x
+}
