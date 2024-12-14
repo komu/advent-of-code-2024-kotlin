@@ -81,6 +81,9 @@ data class Point(val x: Int, val y: Int) {
     val cardinalNeighbors: Collection<Point>
         get() = CardinalDirection.entries.map { this + it }
 
+     val neighbors: Collection<Point>
+        get() = Direction.entries.map { this + it }
+
     fun squaredDistance(p: Point) = square(x - p.x) + square(y - p.y)
     fun isCardinalNeighbor(p: Point) = squaredDistance(p) == 1
     fun isDiagonalNeighbor(p: Point) = abs(x - p.x) == 1 && abs(y - p.y) == 1
