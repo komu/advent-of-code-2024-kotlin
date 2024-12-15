@@ -67,7 +67,7 @@ class CharGrid(private val data: String, width: Int) : Grid<Char>(width, data.le
     }
 }
 
-class IntGrid(private val data: IntArray, width: Int) : MutableGrid<Int>(width, data.size / width) {
+class IntGrid private constructor(private val data: IntArray, width: Int) : MutableGrid<Int>(width, data.size / width) {
 
     constructor(width: Int, height: Int, initialValue: Int = 0) : this(IntArray(width * height) { initialValue }, width)
 
@@ -77,5 +77,31 @@ class IntGrid(private val data: IntArray, width: Int) : MutableGrid<Int>(width, 
 
     override fun set(x: Int, y: Int, value: Int) {
         data[offset(x, y)] = value
+    }
+}
+
+class MutableCharGrid private constructor(private val data: CharArray, width: Int) : MutableGrid<Char>(width, data.size / width) {
+
+    private fun offset(x: Int, y: Int): Int = y * width + x
+
+    override fun get(x: Int, y: Int) = data[offset(x, y)]
+
+    override fun set(x: Int, y: Int, value: Char) {
+        data[offset(x, y)] = value
+    }
+
+    companion object {
+        operator fun invoke(input: String): MutableCharGrid {
+            val lines = input.lines()
+            val w = lines.first().length
+            val h = lines.size
+
+            val array = CharArray(w * h)
+            for ((y, line) in lines.withIndex())
+                for ((x, c) in line.withIndex())
+                    array[y * w + x] = c
+
+            return MutableCharGrid(array, w)
+        }
     }
 }

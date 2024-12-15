@@ -40,6 +40,16 @@ enum class CardinalDirection(val dx: Int, val dy: Int) {
     }
 
     fun toVec() = Vec2(dx, dy)
+
+    companion object {
+        fun from(c: Char) = when (c) {
+            '>' -> E
+            '<' -> W
+            '^' -> N
+            'v' -> S
+            else -> error("invalid direction '$c'")
+        }
+    }
 }
 
 data class Vec2(val x: Int, val y: Int) {
@@ -184,3 +194,5 @@ class PointSet(val w: Int, val h: Int) {
     private fun index(p: Point) = index(p.x, p.y)
     private fun index(x: Int, y: Int) = y * w + x
 }
+
+fun String.removeNewlines() = replace("\n", "")
