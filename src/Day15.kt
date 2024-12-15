@@ -1,45 +1,27 @@
 import CardinalDirection.*
 
-private class Warehouse(input: String) {
-    val grid = MutableCharGrid(input)
-    val boxes = grid.points.filter { grid[it] == '[' }.map { LargeBox(it) }.toMutableList()
+private class Box(var west: Point, val large: Boolean) {
+    val east: Point
+        get() = if (large) west + E else west
 
-    fun tryMove(point: Point, direction: CardinalDirection): Boolean {
-        var p = point + direction
-        var firstBox: Point? = null
-        while (true) {
-            val next = grid[p]!!
-            when (next) {
-                '.' -> {
-                    if (firstBox != null) {
-                        grid[p] = 'O'
-                        grid[firstBox] = '.'
-                    }
+    val points: Set<Point>
+        get() = setOf(west, east)
 
-                    return true
-                }
+    operator fun contains(p: Point) = p == east || p == west
 
-                '#' -> return false
-                'O' -> {
-                    if (firstBox == null) {
-                        firstBox = p
-                    }
-
-                }
-
-                else -> {
-                    error("invalid '$next' at $p")
-                }
-            }
-
-            p += direction
-        }
-        return false
+    fun push(d: CardinalDirection) {
+        west += d
     }
 
-    fun canMoveInto(target: Point, d: CardinalDirection): Boolean {
-        val value = grid[target]!!
-        if (value == '#')
+    fun gps() = 100 * west.y + west.x
+}
+
+private class Warehouse(val boxes: Collection<Box>, val walls: Set<Point>, val robot: Point) {
+
+    fun canMoveTowards(p: Point, d: CardinalDirection): Boolean {
+        val target = p + d
+
+        if (target in walls)
             return false
 
         val box = boxes.find { it.contains(target) }
@@ -47,109 +29,69 @@ private class Warehouse(input: String) {
             return true
 
         return when (d) {
-            N, S -> canMoveInto(box.p1 + d, d) && canMoveInto(box.p2 + d, d)
-            W -> canMoveInto(box.p1 + d, d)
-            E -> canMoveInto(box.p2 + d, d)
+            N, S -> box.points.all { canMoveTowards(it, d) }
+            W -> canMoveTowards(box.west, d)
+            E -> canMoveTowards(box.east, d)
         }
     }
 
-    fun push(target: Point, d: CardinalDirection) {
-        check(target in grid) { "out of bounds $target, ${grid.xRange} ${grid.yRange}" }
-        val value = grid[target]!!
-        if (value == '#')
-            return
-
-        val box = boxes.find { it.contains(target) }
-        if (box == null)
-            return
+    fun pushTowards(p: Point, d: CardinalDirection) {
+        val target = p + d
+        val box = boxes.find { it.contains(target) } ?: return
 
         when (d) {
-            N, S -> {
-                push(box.p1 + d, d)
-                push(box.p2 + d, d)
-            }
-            W -> push(box.p1 + d, d)
-            E -> push(box.p2 + d, d)
+            N, S -> box.points.forEach { pushTowards(it, d) }
+            W -> pushTowards(box.west, d)
+            E -> pushTowards(box.east, d)
         }
         box.push(d)
     }
 
-    fun gps() = grid.points.sumOf { p ->
-        if (grid[p] == 'O')
-            100 * p.y + p.x
-        else
-            0
+    companion object {
+        fun parse(input: String): Warehouse {
+            val grid = CharGrid(input)
+
+            return Warehouse(
+                boxes = buildList {
+                    for ((p, v) in grid.pointsWithValues)
+                        when (v) {
+                            '[' -> add(Box(p, large = true))
+                            'O' -> add(Box(p, large = false))
+                        }
+                },
+                walls = grid.findAll('#'),
+                robot = grid.find('@') ?: error("no robot")
+            )
+        }
     }
 }
 
-private class LargeBox(var p1: Point) {
-    val p2: Point
-        get() = p1 + E
-
-    operator fun contains(p: Point) = p == p1 || p == p2
-
-    fun push(d: CardinalDirection) {
-        p1 += d
-    }
-
-    fun gps() = 100 * p1.y + p1.x
-}
 
 fun main() {
 
-    fun parse(input: String, part2: Boolean = false): Pair<Warehouse, List<CardinalDirection>> {
-        var (p1, p2) = input.split("\n\n")
+    fun solve(input: String): Int {
+        val (p1, p2) = input.split("\n\n")
 
-        if (part2)
-            p1 = p1.replace("#", "##").replace("O", "[]").replace(".", "..").replace("@", "@.")
-
-        val warehouse = Warehouse(p1)
+        val warehouse = Warehouse.parse(p1)
         val moves = p2.removeNewlines().map { CardinalDirection.from(it) }
+        var robot = warehouse.robot
 
-        return Pair(warehouse, moves)
-    }
-
-    fun part1(input: String): Int {
-        val (warehouse, moves) = parse(input)
-
-        var robot = warehouse.grid.find('@') ?: error("no robot")
-        warehouse.grid[robot] = '.'
-
-        for (move in moves) {
-            if (warehouse.tryMove(robot, move)) {
+        for (move in moves)
+            if (warehouse.canMoveTowards(robot, move)) {
+                warehouse.pushTowards(robot, move)
                 robot += move
             }
-        }
 
-        return warehouse.gps()
+        return warehouse.boxes.sumOf { it.gps() }
     }
 
-    fun part2(input: String): Int {
-        val (warehouse, moves) = parse(input, true)
+    fun String.widen() = replace("#", "##").replace("O", "[]").replace(".", "..").replace("@", "@.")
 
-        var robot = warehouse.grid.find('@') ?: error("no robot")
-        warehouse.grid[robot] = '.'
-
-        val boxes = warehouse.boxes
-        for (p in warehouse.grid.points) {
-            if (warehouse.grid[p] == '[' || warehouse.grid[p] == ']')
-                warehouse.grid[p] = '.'
-        }
-
-        for (move in moves) {
-            val target = robot + move
-            if (warehouse.canMoveInto(target, move)) {
-                warehouse.push(target, move)
-                robot = target
-            }
-        }
-
-        return boxes.sumOf { it.gps() }
-    }
+    fun part1(input: String) = solve(input)
+    fun part2(input: String) = solve(input.widen())
 
     check(part1(readInput("Day15_test")) == 2028)
     check(part1(readInput("Day15_test2")) == 10092)
-
     check(part2(readInput("Day15_test3")) == 618)
     check(part2(readInput("Day15_test2")) == 9021)
 
