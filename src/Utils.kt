@@ -39,6 +39,13 @@ enum class CardinalDirection(val dx: Int, val dy: Int) {
         W -> N
     }
 
+    fun counterClockwise(): CardinalDirection = when (this) {
+        N -> W
+        E -> N
+        S -> E
+        W -> S
+    }
+
     fun toVec() = Vec2(dx, dy)
 
     companion object {
