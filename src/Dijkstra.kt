@@ -37,12 +37,12 @@ fun <T> allShortestPaths(from: T, isTarget: (T) -> Boolean, edges: (T) -> List<P
 
     while (queue.isNotEmpty()) {
         val u = queue.remove()
+        if (u.totalCost > best)
+            continue
 
         if (isTarget(u.point)) {
-            if (u.totalCost <= best) {
-                best = u.totalCost
-                paths += u.toList()
-            }
+            best = u.totalCost
+            paths += u.toList()
 
         } else {
             for ((v, cost) in edges(u.point)) {
