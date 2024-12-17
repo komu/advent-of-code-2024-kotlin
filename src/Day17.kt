@@ -16,25 +16,23 @@ private class VM(var a: Long, var b: Long, var c: Long, val program: List<Int>) 
         while (running) {
             val inst = program[ip]
             val operand = program[ip + 1]
+            ip += 2
 
             when (inst) {
                 0 -> a = a / (1 shl combo(operand).toInt())
                 1 -> b = b xor operand.toLong()
                 2 -> b = combo(operand) % 8
-                3 -> if (a != 0L) {
-                    ip = operand.toInt() - 2
-                }
+                3 -> if (a != 0L) ip = operand.toInt()
                 4 -> b = b xor c
                 5 -> {
                     output.add((combo(operand) % 8).toInt())
-                    ip += 2
                     return
                 }
                 6 -> b = a / (1 shl combo(operand).toInt())
                 7 -> c = a / (1 shl combo(operand).toInt())
                 else -> error("invalid $inst")
             }
-            ip += 2
+
         }
     }
 
