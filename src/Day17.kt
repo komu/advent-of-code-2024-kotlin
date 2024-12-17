@@ -8,11 +8,11 @@ private class VM(var a: Long, var b: Long, var c: Long, val program: List<Int>) 
     fun step(a: Long): Int {
         this.a = a
         ip = 0
-        runUntilNextBranch()
+        runUntilNextOutput()
         return output.last()
     }
 
-    fun runUntilNextBranch() {
+    fun runUntilNextOutput() {
         while (running) {
             val inst = program[ip]
             val operand = program[ip + 1]
@@ -22,11 +22,14 @@ private class VM(var a: Long, var b: Long, var c: Long, val program: List<Int>) 
                 1 -> b = b xor operand.toLong()
                 2 -> b = combo(operand) % 8
                 3 -> if (a != 0L) {
-                    ip = operand.toInt()
-                    return
+                    ip = operand.toInt() - 2
                 }
                 4 -> b = b xor c
-                5 -> output.add((combo(operand) % 8).toInt())
+                5 -> {
+                    output.add((combo(operand) % 8).toInt())
+                    ip += 2
+                    return
+                }
                 6 -> b = a / (1 shl combo(operand).toInt())
                 7 -> c = a / (1 shl combo(operand).toInt())
                 else -> error("invalid $inst")
@@ -60,7 +63,7 @@ fun main() {
         val vm = parse(input)
 
         while (vm.running)
-            vm.runUntilNextBranch()
+            vm.runUntilNextOutput()
 
         return vm.output.joinToString(",")
     }
