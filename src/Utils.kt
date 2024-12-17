@@ -135,6 +135,9 @@ val IntRange.size: Int
 fun sum(range: IntRange): Int =
     sumFromZeroTo(range.endInclusive) - sumFromZeroTo(range.start - 1)
 
+infix fun Long.xor(x: Int) = this xor x.toLong()
+fun pow2(x: Long) = 1 shl x.toInt()
+
 fun Iterable<Int>.product() = fold(1) { acc, x -> acc * x }
 
 private fun sumFromZeroTo(n: Int) =

@@ -19,24 +19,23 @@ private class VM(var a: Long, var b: Long, var c: Long, val program: List<Int>) 
             ip += 2
 
             when (inst) {
-                0 -> a = a / (1 shl combo(operand).toInt())
-                1 -> b = b xor operand.toLong()
+                0 -> a = a / pow2(combo(operand))
+                1 -> b = b xor operand
                 2 -> b = combo(operand) % 8
-                3 -> if (a != 0L) ip = operand.toInt()
+                3 -> if (a != 0L) ip = operand
                 4 -> b = b xor c
                 5 -> {
                     output.add((combo(operand) % 8).toInt())
                     return
                 }
-                6 -> b = a / (1 shl combo(operand).toInt())
-                7 -> c = a / (1 shl combo(operand).toInt())
+                6 -> b = a / pow2(combo(operand))
+                7 -> c = a / pow2(combo(operand))
                 else -> error("invalid $inst")
             }
-
         }
     }
 
-    private fun combo(i: Int): Long = when (i) {
+    private fun combo(i: Int) = when (i) {
         in 0..3 -> i.toLong()
         4 -> a
         5 -> b
