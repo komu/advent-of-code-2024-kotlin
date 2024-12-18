@@ -4,7 +4,29 @@ data class PathResult<T>(val cost: Int, val result: List<T>)
 data class PathsResult<T>(val cost: Int, val paths: List<List<T>>)
 
 fun <T> shortestPathWithUniformCost(from: T, target: T, edges: (T) -> List<T>): PathResult<T>? =
-    shortestPath(from, { it == target }) { edges(it).map { v -> v to 1 }}
+    shortestPathWithUniformCost(from, { it == target }, edges)
+
+fun <T> shortestPathWithUniformCost(from: T, isTarget: (T) -> Boolean, edges: (T) -> List<T>): PathResult<T>? {
+    val initial = PathNode(from, null, 0)
+    val seen = mutableSetOf<T>()
+
+    val queue = ArrayDeque<PathNode<T>>()
+    queue.add(initial)
+
+    while (queue.isNotEmpty()) {
+        val u = queue.removeFirst()
+
+        if (isTarget(u.point)) {
+            return PathResult(u.totalCost, u.toList())
+        } else {
+            for (v in edges(u.point))
+                if (seen.add(v))
+                    queue += PathNode(v, u, u.totalCost + 1)
+        }
+    }
+
+    return null
+}
 
 fun <T> shortestPath(from: T, isTarget: (T) -> Boolean, edges: (T) -> List<Pair<T, Int>>): PathResult<T>? {
     val initial = PathNode(from, null, 0)
