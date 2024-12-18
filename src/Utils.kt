@@ -96,6 +96,7 @@ data class Point(val x: Int, val y: Int) {
     operator fun plus(d: CardinalDirection) = this + d.toVec()
     operator fun minus(p: Point) = Vec2(x - p.x, y - p.y)
 
+    override fun toString() = "$x,$y"
     val cardinalNeighbors: Collection<Point>
         get() = CardinalDirection.entries.map { this + it }
 
@@ -105,6 +106,14 @@ data class Point(val x: Int, val y: Int) {
     fun squaredDistance(p: Point) = square(x - p.x) + square(y - p.y)
     fun isCardinalNeighbor(p: Point) = squaredDistance(p) == 1
     fun isDiagonalNeighbor(p: Point) = abs(x - p.x) == 1 && abs(y - p.y) == 1
+
+    companion object {
+        fun parse(s: String): Point {
+            val parts = s.split(",")
+            require(parts.size == 2)
+            return Point(parts[0].toInt(), parts[1].toInt())
+        }
+    }
 }
 
 fun square(x: Int) = x * x

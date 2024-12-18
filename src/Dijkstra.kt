@@ -3,6 +3,9 @@ import java.util.*
 data class PathResult<T>(val cost: Int, val result: List<T>)
 data class PathsResult<T>(val cost: Int, val paths: List<List<T>>)
 
+fun <T> shortestPathWithUniformCost(from: T, target: T, edges: (T) -> List<T>): PathResult<T>? =
+    shortestPath(from, { it == target }) { edges(it).map { v -> v to 1 }}
+
 fun <T> shortestPath(from: T, isTarget: (T) -> Boolean, edges: (T) -> List<Pair<T, Int>>): PathResult<T>? {
     val initial = PathNode(from, null, 0)
     val queue = PriorityQueue(setOf(initial))
