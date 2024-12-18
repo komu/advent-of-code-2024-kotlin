@@ -19,16 +19,13 @@ fun main() {
     }
 
     fun part2(input: String, size: Int = 70): String {
-        val points = parse(input)
-        val corrupted = mutableSetOf<Point>()
+        val ps = parse(input)
 
-        for (p in points) {
-            corrupted.add(p)
-            if (findPath(corrupted, size) == null)
-                return p.toString()
-        }
+        val index = ps.indices.binarySearchFirst { i ->
+            findPath(ps.take(i + 1).toSet(), size) == null
+        }!!
 
-        error("no result")
+        return ps[index].toString()
     }
 
     check(part1(readInput("Day18_test"), size = 6, take = 12) == 22)

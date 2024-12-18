@@ -100,7 +100,7 @@ data class Point(val x: Int, val y: Int) {
     val cardinalNeighbors: Collection<Point>
         get() = CardinalDirection.entries.map { this + it }
 
-     val neighbors: Collection<Point>
+    val neighbors: Collection<Point>
         get() = Direction.entries.map { this + it }
 
     fun squaredDistance(p: Point) = square(x - p.x) + square(y - p.y)
@@ -215,3 +215,24 @@ class PointSet(val w: Int, val h: Int) {
 }
 
 fun String.removeNewlines() = replace("\n", "")
+
+/**
+ * Returns the first element in range for which given predicate is true
+ */
+inline fun IntRange.binarySearchFirst(predicate: (Int) -> Boolean): Int? {
+    var low = this.first
+    var high = this.last
+    var result: Int? = null
+
+    while (low <= high) {
+        val mid = low + (high - low) / 2
+        if (predicate(mid)) {
+            result = mid
+            high = mid - 1
+        } else {
+            low = mid + 1
+        }
+    }
+
+    return result
+}
