@@ -1,20 +1,18 @@
 #set( $Code = "bar" )
 
-private data class Row(val x: Int, val y: Int) {
-    
-    companion object {
-        private val regex = Regex("""(\d+)\s+(\d+)""")
-        
-        fun parse(s: String): Row {
-            val (x, y) = regex.matchEntire(s)?.destructured ?: error("invalid input line '\$s'")
-            return Row(x.toInt(), y.toInt()) 
-        }
-    }
-}
+private data class Row(val x: Int, val y: Int)
 
 fun main() {
+    val regex = Regex("""(\d+)\s+(\d+)""")
+    
+    fun parse(input: String) =
+        input.lines().map {
+            val (x, y) = regex.matchEntire(it)?.destructured ?: error("invalid input line '\$it'")
+            Row(x.toInt(), y.toInt())
+        }
+    
     fun part1(input: String): Int {
-        val rows = input.lines().map { Row.parse(it) }
+        val rows = parse(input)
         println(rows)
         return 0
     }
@@ -23,13 +21,8 @@ fun main() {
         return 0
     }
 
-    val testInput = readInput("Day${Day}_test")
-    val p1 = part1(testInput)
-    p1.println() 
-    check(p1 == 0)
-    val p2 = part2(testInput)
-    p2.println() 
-    //check(p2 == 0)
+    check(part1(readInput("Day18_test")).trace("part 1") == 0)
+    //check(part2(readInput("Day18_test")).trace("part ") == 0)
 
     println("--")
     val input = readInput("Day$Day")
