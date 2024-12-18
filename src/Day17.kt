@@ -5,13 +5,6 @@ private class VM(var a: Long, var b: Long, var c: Long, val program: List<Int>) 
     val running: Boolean
         get() = ip in program.indices
 
-    fun step(a: Long): Int {
-        this.a = a
-        ip = 0
-        runUntilNextOutput()
-        return output.last()
-    }
-
     fun runUntilNextOutput() {
         while (running) {
             val inst = program[ip]
@@ -28,6 +21,7 @@ private class VM(var a: Long, var b: Long, var c: Long, val program: List<Int>) 
                     output.add((combo(operand) % 8).toInt())
                     return
                 }
+
                 6 -> b = a / pow2(combo(operand))
                 7 -> c = a / pow2(combo(operand))
                 else -> error("invalid $inst")
@@ -68,13 +62,14 @@ fun main() {
     fun part2(input: String): Long {
         val vm = parse(input)
 
-        var a = 0L
-        for (op in vm.program.reversed()) {
-            a *= 8
-            a = (a..a + 255).find { vm.step(it) == op }!!
+        return vm.program.foldRight(0L) { op, a ->
+            ((8 * a)..(8 * a) + 255).find { candidate ->
+                vm.a = candidate
+                vm.ip = 0
+                vm.runUntilNextOutput()
+                vm.output.last() == op
+            }!!
         }
-
-        return a
     }
 
     check(part1(readInput("Day17_test")) == "4,6,3,5,6,3,5,2,1,0")
