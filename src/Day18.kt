@@ -1,31 +1,26 @@
 fun main() {
 
-    fun parse(input: String) =
-        input.lines().map(Point::parse)
-
-    fun findPath(corrupted: Set<Point>, size: Int): Int? {
-        val start = Point(0, 0)
-        val end = Point(size, size)
+    fun pathLength(corrupted: Set<Point>, size: Int): Int? {
         val bounds = Bounds(0..size, 0..size)
 
-        return shortestPathWithUniformCost(start, end) { p ->
+        return shortestPathWithUniformCost(from = Point(0, 0), target = Point(size, size)) { p ->
             p.cardinalNeighbors.filter { it -> it in bounds && it !in corrupted }
         }?.cost
     }
 
     fun part1(input: String, size: Int = 70, take: Int = 1024): Int {
-        val corrupted = parse(input).take(take).toSet()
-        return findPath(corrupted, size) ?: error("no path found")
+        val corrupted = input.lines().take(take).map(Point::parse).toSet()
+        return pathLength(corrupted, size)!!
     }
 
     fun part2(input: String, size: Int = 70): String {
-        val ps = parse(input)
+        val points = input.lines().map(Point::parse)
 
-        val index = ps.indices.binarySearchFirst { i ->
-            findPath(ps.take(i + 1).toSet(), size) == null
-        }!!
+        val index = points.indices.binarySearchFirst { i ->
+            pathLength(points.take(i + 1).toSet(), size) == null
+        }
 
-        return ps[index].toString()
+        return points[index!!].toString()
     }
 
     check(part1(readInput("Day18_test"), size = 6, take = 12) == 22)
