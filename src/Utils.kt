@@ -6,6 +6,7 @@ import kotlin.io.path.readText
 import kotlin.math.abs
 import kotlin.math.floor
 import kotlin.math.log10
+import kotlin.math.pow
 
 fun readInput(name: String) = Path("src/$name.txt").readText().trim()
 
@@ -144,13 +145,16 @@ val IntRange.size: Int
 fun sum(range: IntRange): Int =
     sumFromZeroTo(range.endInclusive) - sumFromZeroTo(range.start - 1)
 
-infix fun Long.xor(x: Int) = this xor x.toLong()
-fun pow2(x: Long) = 1 shl x.toInt()
-
-fun Iterable<Int>.product() = fold(1) { acc, x -> acc * x }
-
 private fun sumFromZeroTo(n: Int) =
     ((n.toLong() * (n + 1)) / 2).toInt()
+
+infix fun Long.xor(x: Int) = this xor x.toLong()
+
+fun pow2(x: Long) = 1 shl x.toInt()
+
+fun pow10(x: Int) = 10.0.pow(x.toDouble()).toLong()
+
+fun Iterable<Int>.product() = fold(1) { acc, x -> acc * x }
 
 fun countDigits(n: Long): Int {
     require(n >= 0)

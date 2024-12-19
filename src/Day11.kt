@@ -1,12 +1,8 @@
 fun main() {
 
     fun splitStone(stone: Long): Pair<Long, Long> {
-        val digits = stone.toString()
-        val mid = digits.length / 2
-        return Pair(
-            digits.substring(0, mid).toLong(),
-            digits.substring(mid).toLong()
-        )
+        val div = pow10(countDigits(stone) / 2)
+        return Pair(stone / div, stone % div)
     }
 
     fun solve(input: String, totalRounds: Int): Long {
