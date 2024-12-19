@@ -5,16 +5,6 @@ fun main() {
         return Pair(s1.split(", "), s2.lines())
     }
 
-    fun isPossible(design: String, patterns: List<String>): Boolean {
-        val cache = mutableMapOf<String, Boolean>()
-
-        fun recurse(design: String): Boolean = cache.getOrPut(design) {
-            design.isEmpty() || patterns.any { design.startsWith(it) && recurse(design.removePrefix(it)) }
-        }
-
-        return recurse(design)
-    }
-
     fun waysToMake(design: String, patterns: List<String>): Long {
         val cache = mutableMapOf<String, Long>()
 
@@ -28,7 +18,7 @@ fun main() {
     fun part1(input: String): Int {
         val (patterns, designs) = parse(input)
 
-        return designs.count { isPossible(it, patterns) }
+        return designs.count { waysToMake(it, patterns) != 0L }
     }
 
     fun part2(input: String): Long {
