@@ -50,17 +50,16 @@ fun main() {
     fun part2(input: String): Int =
         extractRegions(input).sumOf { it.size * sides(it) }
 
-    check(part1(readInput("Day12_test1")).trace("part 1a") == 140)
-    check(part1(readInput("Day12_test2")).trace("part 2b") == 772)
-    check(part1(readInput("Day12_test3")).trace("part 3c") == 1930)
-    check(part2(readInput("Day12_test1")).trace("part 2a") == 80)
-    check(part2(readInput("Day12_test2")).trace("part 2b") == 436)
-    check(part2(readInput("Day12_test3")).trace("part 2c") == 1206)
-    check(part2(readInput("Day12_test4")).trace("part 2d") == 236)
-    check(part2(readInput("Day12_test5")).trace("part 2e") == 368)
+    check(part1(readInput("Day12_test1")) == 140)
+    check(part1(readInput("Day12_test2")) == 772)
+    check(part1(readInput("Day12_test3")) == 1930)
+    check(part2(readInput("Day12_test1")) == 80)
+    check(part2(readInput("Day12_test2")) == 436)
+    check(part2(readInput("Day12_test3")) == 1206)
+    check(part2(readInput("Day12_test4")) == 236)
+    check(part2(readInput("Day12_test5")) == 368)
 
-    println("--")
     val input = readInput("Day12")
     part1(input).println()
-    part2(input).println()// 887536 is too low
+    part2(input).println()
 }
