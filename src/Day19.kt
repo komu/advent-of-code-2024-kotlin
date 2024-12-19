@@ -6,23 +6,20 @@ fun main() {
     }
 
     fun isPossible(design: String, patterns: List<String>): Boolean {
-        val mutableMapOf = mutableMapOf<String, Boolean>()
+        val cache = mutableMapOf<String, Boolean>()
 
-        fun recurse(design: String): Boolean = mutableMapOf.getOrPut(design) {
-            design.isEmpty() || patterns.any { design.startsWith(it) && recurse(design.removeRange(0, it.length)) }
+        fun recurse(design: String): Boolean = cache.getOrPut(design) {
+            design.isEmpty() || patterns.any { design.startsWith(it) && recurse(design.removePrefix(it)) }
         }
 
         return recurse(design)
     }
 
     fun waysToMake(design: String, patterns: List<String>): Long {
-        val mutableMapOf = mutableMapOf<String, Long>()
+        val cache = mutableMapOf<String, Long>()
 
-        fun recurse(design: String): Long = mutableMapOf.getOrPut(design) {
-            if (design.isEmpty())
-                1
-            else
-                patterns.sumOf { if (design.startsWith(it)) recurse(design.removeRange(0, it.length)) else 0 }
+        fun recurse(design: String): Long = cache.getOrPut(design) {
+            if (design.isEmpty()) 1 else patterns.sumOf { if (design.startsWith(it)) recurse(design.removePrefix(it)) else 0 }
         }
 
         return recurse(design)
