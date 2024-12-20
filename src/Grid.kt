@@ -23,7 +23,10 @@ abstract class Grid<T>(val width: Int, val height: Int) {
     fun findAll(value: T): Set<Point> =
         points.filterTo(mutableSetOf<Point>()) { getRequired(it) == value }
 
-    private fun getRequired(p: Point): T = this[p] ?: throw IllegalArgumentException("$p is out of bounds")
+    fun findAllNot(value: T): Set<Point> =
+        points.filterTo(mutableSetOf<Point>()) { getRequired(it) != value }
+
+    fun getRequired(p: Point): T = this[p] ?: throw IllegalArgumentException("$p is out of bounds")
     operator fun get(p: Point): T? = if (p in this) get(p.x, p.y) else null
     operator fun contains(p: Point) = p.x in xRange && p.y in yRange
 

@@ -107,6 +107,7 @@ data class Point(val x: Int, val y: Int) {
     fun squaredDistance(p: Point) = square(x - p.x) + square(y - p.y)
     fun isCardinalNeighbor(p: Point) = squaredDistance(p) == 1
     fun isDiagonalNeighbor(p: Point) = abs(x - p.x) == 1 && abs(y - p.y) == 1
+    fun manhattanDistance(p: Point): Int = abs(x - p.x) + abs(y - p.y)
 
     companion object {
         fun parse(s: String): Point {
