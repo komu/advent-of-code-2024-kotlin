@@ -1,33 +1,9 @@
 import kotlin.math.abs
+import kotlin.time.measureTime
 
 fun main() {
 
-    data class Cheat(val startX: Int, val startY: Int, val endX: Int, val endY: Int, val cost: Int)
-
-    fun generateCheats(track: CharGrid, maxCost: Int): Set<Cheat> {
-        val cheats = mutableSetOf<Cheat>()
-
-        for (startX in track.yRange) {
-            for (startY in track.xRange) {
-                if (track[startX, startY] == '#') continue
-
-                for (dy in -maxCost..maxCost) {
-                    val xRange = maxCost - abs(dy)
-                    for (dx in -xRange..xRange) {
-                        val endX = startX + dx
-                        val endY = startY + dy
-                        val cost = abs(dx) + abs(dy)
-
-                        if (cost in 2..maxCost && track.contains(endX, endY) && track[endX, endY] != '#') {
-                            cheats += Cheat(startX, startY, endX, endY, cost)
-                        }
-                    }
-                }
-            }
-        }
-
-        return cheats
-    }
+    data class Cheat(val startX: Int, val startY: Int, val endX: Int, val endY: Int)
 
     fun solveCounts(input: String, distance: Int): Map<Int, Int> {
         val track = CharGrid(input)
@@ -35,13 +11,33 @@ fun main() {
         val end = track.find('E')!!
         val fromStart = track.distancesFrom(start) { it != '#' }
         val fromEnd = track.distancesFrom(end) { it != '#' }
+        val normalCost = fromStart[end]
 
         val gainCounts = mutableMapOf<Int, Int>()
-        for (cheat in generateCheats(track, distance)) {
-            val cost = cheat.cost + fromStart[cheat.startX, cheat.startY] + fromEnd[cheat.endX, cheat.endY]
-            val gain = fromStart[end] - cost
-            if (gain > 0)
-                gainCounts[gain] = gainCounts.getOrDefault(gain, 0) + 1
+        val cheats = mutableSetOf<Cheat>()
+
+        for (startX in track.yRange) {
+            for (startY in track.xRange) {
+                if (track[startX, startY] == '#') continue
+
+                for (dy in -distance..distance) {
+                    val xRange = distance - abs(dy)
+                    for (dx in -xRange..xRange) {
+                        val endX = startX + dx
+                        val endY = startY + dy
+
+                        if (track[endX, endY] == '#') continue
+
+                        val cheatCost = abs(dx) + abs(dy)
+                        if (cheatCost > 1 && track.contains(endX, endY)) {
+                            val cost = cheatCost + fromStart[startX, startY] + fromEnd[endX, endY]
+                            val gain = normalCost - cost
+                            if (gain > 0 && cheats.add(Cheat(startX, startY, endX, endY)))
+                                gainCounts[gain] = gainCounts.getOrDefault(gain, 0) + 1
+                        }
+                    }
+                }
+            }
         }
         return gainCounts
     }
@@ -57,6 +53,8 @@ fun main() {
     // @formatter:on
 
     val input = readInput("Day20")
-    part1(input).println()
-    part2(input).println()
+    measureTime {
+        part1(input).println()
+        part2(input).println()
+    }.println()
 }
