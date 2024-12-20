@@ -1,19 +1,29 @@
+import kotlin.math.abs
 
 fun main() {
 
     data class Cheat(val start: Point, val end: Point, val cost: Int)
 
-    fun CharGrid.pathLength(start: Point, end: Point): Int =
-        shortestPathWithUniformCost(start, end) { it.cardinalNeighbors.filter { this[it] != '#' } }!!.cost
-
-    fun generateCheats(endpoints: Collection<Point>, maxCost: Int): MutableSet<Cheat> {
+    fun generateCheats(track: CharGrid, maxCost: Int): Set<Cheat> {
         val cheats = mutableSetOf<Cheat>()
 
-        for (start in endpoints) {
-            for (end in endpoints) {
-                val cost = start.manhattanDistance(end)
-                if (cost > 1 && cost <= maxCost)
-                    cheats += Cheat(start, end, cost)
+        for (startX in track.yRange) {
+            for (startY in track.xRange) {
+                if (track[startX, startY] == '#') continue
+                val start = Point(startX, startY)
+
+                for (dy in -maxCost..maxCost) {
+                    val xRange = maxCost - abs(dy)
+                    for (dx in -xRange..xRange) {
+                        val endX = startX + dx
+                        val endY = startY + dy
+                        val cost = abs(dx) + abs(dy)
+
+                        if (cost in 2..maxCost && track.contains(endX, endY) && track[endX, endY] != '#') {
+                            cheats += Cheat(start, Point(endX, endY), cost)
+                        }
+                    }
+                }
             }
         }
 
@@ -24,18 +34,13 @@ fun main() {
         val track = CharGrid(input)
         val start = track.find('S')!!
         val end = track.find('E')!!
-        val validPoints = track.findAllNot('#')
-
-        val cheats = generateCheats(validPoints, distance)
-
-        val originalCost = track.pathLength(start, end)
-        val pathsFromStart = validPoints.associateWith { track.pathLength(start, it) }
-        val pathsToEnd = validPoints.associateWith { track.pathLength(it, end) }
+        val fromStart = track.distancesFrom(start) { it != '#' }
+        val fromEnd = track.distancesFrom(end) { it != '#' }
 
         val gainCounts = mutableMapOf<Int, Int>()
-        for (cheat in cheats.progressIterator()) {
-            val cost = cheat.cost + pathsFromStart[cheat.start]!! + pathsToEnd[cheat.end]!!
-            val gain = originalCost - cost
+        for (cheat in generateCheats(track, distance)) {
+            val cost = cheat.cost + fromStart[cheat.start] + fromEnd[cheat.end]
+            val gain = fromStart[end] - cost
             if (gain > 0)
                 gainCounts[gain] = gainCounts.getOrDefault(gain, 0) + 1
         }

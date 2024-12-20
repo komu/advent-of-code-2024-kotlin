@@ -118,6 +118,8 @@ data class Point(val x: Int, val y: Int) {
     }
 }
 
+fun manhattanDistance(x1: Int, y1: Int, x2: Int, y2: Int): Int = abs(x1 - x2) + abs(y1 - y2)
+
 fun square(x: Int) = x * x
 
 data class Bounds(val xRange: IntRange, val yRange: IntRange) {

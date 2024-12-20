@@ -1,3 +1,5 @@
+import java.util.*
+
 abstract class Grid<T>(val width: Int, val height: Int) {
 
     val xRange = 0..<width
@@ -23,14 +25,14 @@ abstract class Grid<T>(val width: Int, val height: Int) {
     fun findAll(value: T): Set<Point> =
         points.filterTo(mutableSetOf<Point>()) { getRequired(it) == value }
 
-    fun findAllNot(value: T): Set<Point> =
-        points.filterTo(mutableSetOf<Point>()) { getRequired(it) != value }
-
     fun getRequired(p: Point): T = this[p] ?: throw IllegalArgumentException("$p is out of bounds")
-    operator fun get(p: Point): T? = if (p in this) get(p.x, p.y) else null
-    operator fun contains(p: Point) = p.x in xRange && p.y in yRange
+    open operator fun get(p: Point): T? = if (p in this) getChecked(p.x, p.y) else null
+    open operator fun get(x: Int, y: Int): T? = if (contains(x, y)) getChecked(x, y) else null
 
-    protected abstract fun get(x: Int, y: Int): T
+    operator fun contains(p: Point) = contains(p.x, p.y)
+    fun contains(x: Int, y: Int) = x in xRange && y in yRange
+
+    protected abstract fun getChecked(x: Int, y: Int): T
 }
 
 abstract class MutableGrid<T>(width: Int, height: Int) : Grid<T>(width, height) {
@@ -60,7 +62,29 @@ class CharGrid(private val data: String, width: Int) : Grid<Char>(width, data.le
     // add 1 to ignore ending newlines
     private fun offset(x: Int, y: Int) = y * (width + 1) + x
 
-    override fun get(x: Int, y: Int) = data[offset(x, y)]
+    override fun getChecked(x: Int, y: Int) = data[offset(x, y)]
+
+    fun distancesFrom(start: Point, accept: (Char) -> Boolean): IntGrid {
+        val costs = IntGrid(width, height, Int.MAX_VALUE)
+        costs[start] = 0
+
+        val queue = ArrayDeque<Point>()
+        queue.add(start)
+
+        while (queue.isNotEmpty()) {
+            val u = queue.removeFirst()
+            val cost = costs[u]
+
+            for (n in u.cardinalNeighbors) {
+                if (accept(getRequired(n)) && costs[n] == Int.MAX_VALUE) {
+                    costs[n] = cost + 1
+                    queue.push(n)
+                }
+            }
+        }
+
+        return costs
+    }
 
     companion object {
         operator fun invoke(input: String): CharGrid {
@@ -76,7 +100,8 @@ class IntGrid private constructor(private val data: IntArray, width: Int) : Muta
 
     private fun offset(x: Int, y: Int): Int = y * width + x
 
-    override fun get(x: Int, y: Int) = data[offset(x, y)]
+    override operator fun get(p: Point): Int = data[offset(p.x, p.y)]
+    override fun getChecked(x: Int, y: Int): Int = data[offset(x, y)]
 
     override fun set(x: Int, y: Int, value: Int) {
         data[offset(x, y)] = value
@@ -87,7 +112,7 @@ class MutableCharGrid private constructor(private val data: CharArray, width: In
 
     private fun offset(x: Int, y: Int): Int = y * width + x
 
-    override fun get(x: Int, y: Int) = data[offset(x, y)]
+    override fun getChecked(x: Int, y: Int) = data[offset(x, y)]
 
     override fun set(x: Int, y: Int, value: Char) {
         data[offset(x, y)] = value
