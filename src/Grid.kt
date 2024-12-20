@@ -100,7 +100,15 @@ class IntGrid private constructor(private val data: IntArray, width: Int) : Muta
 
     private fun offset(x: Int, y: Int): Int = y * width + x
 
-    override operator fun get(p: Point): Int = data[offset(p.x, p.y)]
+    override operator fun get(p: Point): Int {
+        assert(contains(p))
+        return data[offset(p.x, p.y)]
+    }
+
+    override operator fun get(x: Int, y: Int): Int {
+        assert(contains(x, y))
+        return data[offset(x, y)]
+    }
     override fun getChecked(x: Int, y: Int): Int = data[offset(x, y)]
 
     override fun set(x: Int, y: Int, value: Int) {

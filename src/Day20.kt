@@ -2,7 +2,7 @@ import kotlin.math.abs
 
 fun main() {
 
-    data class Cheat(val start: Point, val end: Point, val cost: Int)
+    data class Cheat(val startX: Int, val startY: Int, val endX: Int, val endY: Int, val cost: Int)
 
     fun generateCheats(track: CharGrid, maxCost: Int): Set<Cheat> {
         val cheats = mutableSetOf<Cheat>()
@@ -10,7 +10,6 @@ fun main() {
         for (startX in track.yRange) {
             for (startY in track.xRange) {
                 if (track[startX, startY] == '#') continue
-                val start = Point(startX, startY)
 
                 for (dy in -maxCost..maxCost) {
                     val xRange = maxCost - abs(dy)
@@ -20,7 +19,7 @@ fun main() {
                         val cost = abs(dx) + abs(dy)
 
                         if (cost in 2..maxCost && track.contains(endX, endY) && track[endX, endY] != '#') {
-                            cheats += Cheat(start, Point(endX, endY), cost)
+                            cheats += Cheat(startX, startY, endX, endY, cost)
                         }
                     }
                 }
@@ -39,7 +38,7 @@ fun main() {
 
         val gainCounts = mutableMapOf<Int, Int>()
         for (cheat in generateCheats(track, distance)) {
-            val cost = cheat.cost + fromStart[cheat.start] + fromEnd[cheat.end]
+            val cost = cheat.cost + fromStart[cheat.startX, cheat.startY] + fromEnd[cheat.endX, cheat.endY]
             val gain = fromStart[end] - cost
             if (gain > 0)
                 gainCounts[gain] = gainCounts.getOrDefault(gain, 0) + 1
