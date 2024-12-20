@@ -21,8 +21,8 @@ fun main() {
         return 0
     }
 
-    check(part1(readInput("Day18_test")).trace("part 1") == 0)
-    //check(part2(readInput("Day18_test")).trace("part ") == 0)
+    check(part1(readInput("Day${Day}_test")).trace("part 1") == 0)
+    //check(part2(readInput("Day${Day}_test")).trace("part ") == 0)
 
     println("--")
     val input = readInput("Day$Day")
