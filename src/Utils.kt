@@ -243,3 +243,11 @@ inline fun IntRange.binarySearchFirst(predicate: (Int) -> Boolean): Int? {
 
     return result
 }
+
+fun <T> assertEquals(left: T, right: T, prefix: String? = null) {
+    if (left != right) {
+        val message = prefix?.let { "$it: " }.orEmpty() + "expected: $left, actual: $right";
+        println(message)
+        error(message)
+    }
+}
