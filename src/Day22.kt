@@ -1,5 +1,4 @@
 fun main() {
-
     fun nextSecret(x: Int): Int {
         val mod = 16777216L
 
@@ -10,11 +9,6 @@ fun main() {
         return x.toInt()
     }
 
-    fun windowId(prices: List<Int>): Int {
-        val ds = prices.deltas()
-        return ds[0] * 10000000 + ds[1] * 10000 + ds[2] * 100 + ds[3]
-    }
-
     fun part1(input: String): Long {
         val secrets = input.lines().map { it.toInt() }
         return secrets.sumOf { (1..2000).fold(it) { acc, _ -> nextSecret(acc) }.toLong() }
@@ -22,20 +16,36 @@ fun main() {
 
     fun part2(input: String): Int {
         val secrets = input.lines().map { it.toInt() }
+        val pricesByWindow = IntArray(2 shl 20)
+        val seen = IntArray(2 shl 20)
 
-        val sellerPricesByWindow = secrets.map { secret ->
-            val prices = generateSequence(secret) { nextSecret(it) }.map { it % 10 }.take(2000).toList()
-            prices.windowed(5).reversed().associate { windowId(it) to it.last() }
+        var previousPrice = 0
+        for ((seller, secret) in secrets.withIndex()) {
+            var windowId = 0
+            var value = secret
+
+            repeat(2000) { i ->
+                val price = value % 10
+                val delta = previousPrice - price
+                windowId = ((windowId shl 5) or (delta + 9)) and ((2 shl 20) - 1)
+
+                if (i > 4 && seen[windowId] != seller + 1) {
+                    seen[windowId] = seller + 1
+                    pricesByWindow[windowId] += price
+                }
+
+                value = nextSecret(value)
+                previousPrice = price
+            }
         }
 
-        val candidateWindows = sellerPricesByWindow.flatMap { it.keys }.toSet()
-        return candidateWindows.maxOf { window -> sellerPricesByWindow.sumOf { it[window] ?: 0 } }
+        return pricesByWindow.max()
     }
 
     check(part1(readInput("Day22_test")) == 37327623L)
     check(part2(readInput("Day22_test2")) == 23)
-
     val input = readInput("Day22")
+
     part1(input).println()
     part2(input).println()
 }
