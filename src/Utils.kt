@@ -251,3 +251,5 @@ fun <T> assertEquals(left: T, right: T, prefix: String? = null) {
         error(message)
     }
 }
+
+fun List<Int>.deltas(): List<Int> = zipWithNext { a, b -> b - a }
