@@ -253,3 +253,6 @@ fun <T> assertEquals(left: T, right: T, prefix: String? = null) {
 }
 
 fun List<Int>.deltas(): List<Int> = zipWithNext { a, b -> b - a }
+
+fun <T> Map<T, Collection<T>>.neighbors(name: T) = this[name].orEmpty()
+
