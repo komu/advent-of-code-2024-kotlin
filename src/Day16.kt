@@ -33,6 +33,7 @@ fun main() {
 
     check(part1(readInput("Day16_test")) == 7036)
     check(part1(readInput("Day16_test2")) == 11048)
+    check(part2(readInput("Day16_test2")) == 64)
 
     val input = readInput("Day16")
     part1(input).println()
