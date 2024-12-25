@@ -256,3 +256,14 @@ fun List<Int>.deltas(): List<Int> = zipWithNext { a, b -> b - a }
 
 fun <T> Map<T, Collection<T>>.neighbors(name: T) = this[name].orEmpty()
 
+fun <T> List<List<T>>.transpose(): List<List<T>> {
+    val result = MutableList(this[0].size) { mutableListOf<T>() }
+    for (row in this) {
+        for ((i, value) in row.withIndex()) {
+            result[i].add(value)
+        }
+    }
+    return result
+}
+
+fun <T> Iterable<T>.countValues(v: T) = count { it == v }
