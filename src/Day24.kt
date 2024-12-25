@@ -67,32 +67,27 @@ private fun findBadWires(gates: Map<String, Gate>): List<String> {
     return bad
 }
 
-private fun generateDot(gates: Map<String, Gate>): String = buildString {
-    appendLine("digraph G {")
+private fun generateDot(gates: Map<String, Gate>, includeNodeIds: Boolean = false) = digraph("G") {
+    val gateColors = mapOf("AND" to "red", "OR" to "green", "XOR" to "yellow")
 
     for (wire in gates.values.flatMap { listOf(it.lhs, it.rhs) }.distinct())
         if (wire.isInputWire())
-            appendLine("$wire [label=\"${wire}\", shape=square];")
+            node(wire, "shape" to "square")
 
     for (gate in gates.values) {
-        val color = when (gate.op) {
-            "AND" -> "red"
-            "OR" -> "green"
-            "XOR" -> "yellow"
-            else -> error("invalid op ${gate.op}")
-        }
+        edge(gate.lhs, gate.out)
+        edge(gate.rhs, gate.out)
 
-        appendLine("${gate.lhs} -> ${gate.out};")
-        appendLine("${gate.rhs} -> ${gate.out};")
-        appendLine("${gate.out} [label=\"${gate.op} ${gate.out}\", fillcolor=$color, style=filled];")
+        val gateLabel = if (includeNodeIds) "${gate.op}\n${gate.out}" else gate.op
+
+        node(gate.out, "label" to gateLabel, "fillcolor" to gateColors[gate.op]!!, "style" to "filled")
 
         if (gate.out.isOutputWire()) {
-            appendLine("${gate.out} -> ${gate.out}out;")
-            appendLine("${gate.out}out [label=\"${gate.out}\", shape=square];")
+            val outId = "${gate.out}_out"
+            edge(gate.out, outId)
+            node(outId, "label" to gate.out, "shape" to "square")
         }
     }
-
-    appendLine("}")
 }
 
 fun main(args: Array<String>) {
