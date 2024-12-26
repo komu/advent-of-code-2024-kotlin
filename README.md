@@ -1,6 +1,6 @@
 # Advent of Code 2024 in Kotlin
 
-Solutions to Advent of Code 2024 in Kotlin 
+Solutions to Advent of Code 2024 in Kotlin. Check out also my [Rust-versions](https://github.com/komu/advent-of-code-2024-rust).
 
 ## Previously
 
